@@ -14,6 +14,16 @@ typedef struct {    // Generic RGBA pixel type
     uint8_t a;
 } Pixel;
 
+struct Config {           // global config structure
+    Dynarray  dir;          // direction array
+    Dynarray  vert;         // vertex array
+    Dynarray  tile;         // tile master array
+    int       image_width;
+    int       image_height;
+    Pixel     bgcolor;
+    char     *output_png_name;
+};
+
 typedef struct {         // Definition of lattice vertices
     int order;               // order in which vertices are visited
     int *eligible;           // array of eligible tiles or NULL for all
@@ -52,14 +62,9 @@ typedef struct {         // Definition of tile masters
 } Tile;
 
 
-bool partial_line(char *line);
-bool parse_image_line(char *line);
-bool parse_directions_line(char *line);
-bool parse_tile_line(char *line);
-bool parse_vertex_line(char *line);
+// Prototypes ==================================================================
+
 bool load_definitions(char *filename);
 int  pre_init();
-bool streq(char *a, char *b);
-bool streqn(char *a, char *b, int n);
 
 #endif // TILIST_H

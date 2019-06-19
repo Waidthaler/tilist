@@ -1,23 +1,15 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <inttypes.h>
-#include <string.h>
 #include <stdio.h>
 
 #include "dynarray.h"
 #include "lodepng/lodepng.h"
 #include "tilist.h"
+#include "parsing.h"
 
 
-struct {               // global config structure
-    Dynarray  dir;          // direction array
-    Dynarray  vert;         // vertex array
-    Dynarray  tile;         // tile master array
-    uint16_t  image_width;
-    uint16_t  image_height;
-    Pixel     bgcolor;
-    char     *output_png_name;
-} config;
+struct Config config;
 
 
 //==============================================================================
@@ -97,7 +89,7 @@ bool load_definitions(char *filename) {
     }
 
     do {
-        lbuf = fgets(lbuf, LBUFSIZE, fp);
+        fgets(lbuf, LBUFSIZE, fp);
         line_number++;
         if(lbuf == NULL)
             break;
@@ -105,10 +97,15 @@ bool load_definitions(char *filename) {
             printf("FATAL ERROR: Line %d exceeds limit of %d characters.", line_number, LBUFSIZE);
             return false;
         }
-        if(!((streqn(prefix[0], lbuf, strlen(prefix[0]) && parse_vertex_line(lbuf)))
-           || (streqn(prefix[1], lbuf, strlen(prefix[1]) && parse_tile_line(lbuf)))
-           || (streqn(prefix[2], lbuf, strlen(prefix[2]) && parse_image_line(lbuf)))
-           || (streqn(prefix[3], lbuf, strlen(prefix[3]) && parse_directions_line(lbuf)))) ) {
+
+        clean_line(lbuf);   // skip blank lines & comments
+        if(!strlen(lbuf))
+            continue;
+
+        if(!((streqn(prefix[0], lbuf, strlen(prefix[0]) && parse_vertex_line(lbuf, line_number)))
+           || (streqn(prefix[1], lbuf, strlen(prefix[1]) && parse_tile_line(lbuf, line_number)))
+           || (streqn(prefix[2], lbuf, strlen(prefix[2]) && parse_image_line(lbuf, line_number)))
+           || (streqn(prefix[3], lbuf, strlen(prefix[3]) && parse_directions_line(lbuf, line_number)))) ) {
             printf("FATAL ERROR: Syntax error in line %d.\n", line_number);
             return false;
         }
@@ -125,68 +122,6 @@ bool load_definitions(char *filename) {
 
 #undef LBUFSIZE
 
-/*
 
-@IMAGE: h, w, bgcolor, bgimage
-@DIRECTIONS: N, E, S, W     // which translates to 1, 2, 3, 4 (zero is reserved)
-@TILE: [...]
-@VERTEX: order, x, y, N:n1;E:n2;W:n3;S:n4, tiletype:orientation
-
-*/
-
-
-bool parse_image_line(char *line) {
-    return true;
-}
-
-bool parse_directions_line(char *line) {
-    return true;
-}
-
-bool parse_tile_line(char *line) {
-    return true;
-}
-
-bool parse_vertex_line(char *line) {
-    return true;
-}
-
-
-//==============================================================================
-// Returns a boolean indicating whether all of the line was read into the
-// buffer or not, i.e., it ends in a newline.
-//==============================================================================
-
-bool partial_line(char *line) {
-    char *p;
-    for(p = line; *p; p++);
-    return p[-1] == '\n' ? false : true;
-}
-
-
-//==============================================================================
-// Returns a boolean indicating whether the two strings supplied are identical.
-//==============================================================================
-
-bool streq(char *a, char *b) {
-    return strcmp(a, b) ? false : true;
-}
-
-
-//==============================================================================
-// Returns a boolean indicating whether the two strings supplied are identical
-// up to the first n bytes. If either string terminates before the nth
-// character, the result is false.
-//==============================================================================
-
-bool streqn(char *a, char *b, int n) {
-    int i;
-
-    for(i = 0; i < n; i++) {
-        if(a[i] == '\0' || b[i] == '\0' || a[i] != b[i])
-            return false;
-    }
-    return true;
-}
 
 
