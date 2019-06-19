@@ -14,12 +14,15 @@
 
 bool parse_image_line(char *line, int line_number) {
     char *token;
+    bool bres;
 
     line = beginning_of_data(line);
 
+    //--------------------------------------------------------------------------
+
     token = strtok(line, ", ");
     if(!token) {
-        printf("Invalid @IMAGE entry on line %d.\n", line_number);
+        printf("Invalid @IMAGE parameter on line %d.\n", line_number);
         return false;
     }
     config.image_width = atoi(token);
@@ -28,9 +31,11 @@ bool parse_image_line(char *line, int line_number) {
         return false;
     }
 
+    //--------------------------------------------------------------------------
+
     token = strtok(NULL, ", ");
     if(!token) {
-        printf("Missing or invalid @IMAGE height entry on line %d.\n", line_number);
+        printf("Missing or invalid @IMAGE height parameter on line %d.\n", line_number);
         return false;
     }
     config.image_height = atoi(token);
@@ -38,6 +43,23 @@ bool parse_image_line(char *line, int line_number) {
         printf("Invalid @IMAGE height parameter on line %d.\n", line_number);
         return false;
     }
+
+    //--------------------------------------------------------------------------
+
+    token = strtok(NULL, ", ");
+    if(!token) {
+        printf("Missing or invalid @IMAGE background color parameter on line %d.\n", line_number);
+        return false;
+    }
+    bres = parse_rgb_hex(token, &(config.bgcolor));
+    if(!bres) {
+        printf("Invalid @IMAGE background color parameter on line %d.\n", line_number);
+        return false;
+    }
+
+    //--------------------------------------------------------------------------
+
+    // TODO: If present, load background image
 
     return true;
 }
