@@ -1,4 +1,5 @@
 #ifndef TILIST_H
+#define TILIST_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -51,6 +52,12 @@ typedef struct {         // Definition of tile masters
 } Tile;
 
 
+bool partial_line(char *line);
+bool parse_image_line(char *line);
+bool parse_directions_line(char *line);
+bool parse_tile_line(char *line);
+bool parse_vertex_line(char *line);
+bool load_definitions(char *filename);
 int  pre_init();
 bool streq(char *a, char *b);
 bool streqn(char *a, char *b, int n);

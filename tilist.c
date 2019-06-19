@@ -5,7 +5,9 @@
 #include <stdio.h>
 
 #include "dynarray.h"
+#include "lodepng/lodepng.h"
 #include "tilist.h"
+
 
 struct {               // global config structure
     Dynarray  dir;          // direction array
@@ -19,11 +21,23 @@ struct {               // global config structure
 
 
 //==============================================================================
-// Main loop.
+// Main loop. The sole CLI argument is the filename of the config file.
 //==============================================================================
 
 int main(int argc, char **argv) {
+    bool bres;
+
+    if(argc != 2) {
+        printf("FATAL ERROR: The config file must be the only command-line argument.\n");
+        return 1;
+    }
+
     pre_init();
+
+    bres = load_definitions(argv[1]);
+    if(!bres)
+        return 1;
+
     return 0;
 }
 
@@ -64,6 +78,93 @@ int pre_init() {
 
 
 //==============================================================================
+// Attempts to open and load the contents of the config file. Returns true on
+// success and false on failure.
+//==============================================================================
+
+#define LBUFSIZE 1024
+
+bool load_definitions(char *filename) {
+    char *prefix[] = { "@VERTEX:", "@TILE:", "@IMAGE:", "@DIRECTIONS:" };
+    char lbuf[LBUFSIZE];
+    FILE *fp;
+    int line_number = 0;
+
+    fp = fopen(filename, "r");
+    if(fp == NULL) {
+        printf("FATAL ERROR: Unable to open config file '%s'.\n", filename);
+        return false;
+    }
+
+    do {
+        lbuf = fgets(lbuf, LBUFSIZE, fp);
+        line_number++;
+        if(lbuf == NULL)
+            break;
+        if(partial_line(lbuf)) {
+            printf("FATAL ERROR: Line %d exceeds limit of %d characters.", line_number, LBUFSIZE);
+            return false;
+        }
+        if(!((streqn(prefix[0], lbuf, strlen(prefix[0]) && parse_vertex_line(lbuf)))
+           || (streqn(prefix[1], lbuf, strlen(prefix[1]) && parse_tile_line(lbuf)))
+           || (streqn(prefix[2], lbuf, strlen(prefix[2]) && parse_image_line(lbuf)))
+           || (streqn(prefix[3], lbuf, strlen(prefix[3]) && parse_directions_line(lbuf)))) ) {
+            printf("FATAL ERROR: Syntax error in line %d.\n", line_number);
+            return false;
+        }
+
+    } while(1);
+
+    if(lbuf == NULL) {
+        fclose(fp);
+        // we are done reading; perform final checks
+    }
+
+    return true;
+}
+
+#undef LBUFSIZE
+
+/*
+
+@IMAGE: h, w, bgcolor, bgimage
+@DIRECTIONS: N, E, S, W     // which translates to 1, 2, 3, 4 (zero is reserved)
+@TILE: [...]
+@VERTEX: order, x, y, N:n1;E:n2;W:n3;S:n4, tiletype:orientation
+
+*/
+
+
+bool parse_image_line(char *line) {
+    return true;
+}
+
+bool parse_directions_line(char *line) {
+    return true;
+}
+
+bool parse_tile_line(char *line) {
+    return true;
+}
+
+bool parse_vertex_line(char *line) {
+    return true;
+}
+
+
+//==============================================================================
+// Returns a boolean indicating whether all of the line was read into the
+// buffer or not, i.e., it ends in a newline.
+//==============================================================================
+
+bool partial_line(char *line) {
+    char *p;
+    for(p = line; *p; p++);
+    return p[-1] == '\n' ? false : true;
+}
+
+
+//==============================================================================
 // Returns a boolean indicating whether the two strings supplied are identical.
 //==============================================================================
 
@@ -89,26 +190,3 @@ bool streqn(char *a, char *b, int n) {
 }
 
 
-//==============================================================================
-//==============================================================================
-
-int load_definitions(char *filename) {
-
-}
-
-
-
-//==============================================================================
-//==============================================================================
-
-
-/*
-
-@IMAGE: h, w, bgcolor, bgimage
-@DIRECTIONS: N, E, S, W     // which translates to 1, 2, 3, 4 (zero is reserved)
-@TILE: [...]
-@VERTEX: order, x, y, N:n1;E:n2;W:n3;S:n4, tiletype:orientation
-
-
-
-*/

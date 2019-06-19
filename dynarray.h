@@ -1,4 +1,5 @@
 #ifndef DYNARRAY_H
+#define DYNARRAY_H
 
 #include <stdlib.h>
 #include <stdint.h>
