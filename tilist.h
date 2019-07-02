@@ -6,6 +6,7 @@
 #include <inttypes.h>
 
 #include "dynarray.h"
+#include "lodepng/lodepng.h"
 
 typedef struct {    // Generic RGBA pixel type
     uint8_t r;

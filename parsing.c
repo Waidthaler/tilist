@@ -4,12 +4,14 @@
 
 @IMAGE: h, w, #bgcolor, bgimage
 @DIRECTIONS: N, E, S, W     // which translates to 1, 2, 3, 4 (zero is reserved)
-@TILE: [...]
+@TILE: name, s1;s2;...;sn, spritesheet_path;width;height,
 @VERTEX: order, x, y, N:n1;E:n2;W:n3;S:n4, tiletype:orientation
 
 */
 
 //==============================================================================
+// Attempts to parse the supplied image line, storing the results in the global
+// config object. Returns true on success, false on failure.
 //==============================================================================
 
 bool parse_image_line(char *line, int line_number) {
@@ -66,11 +68,29 @@ bool parse_image_line(char *line, int line_number) {
 
 
 //==============================================================================
+// Attempts to parse a directions line. Returns true on success, false on
+// failure. Will fail if duplicate directions are supplied or the number of
+// directions exceeds 32.
 //==============================================================================
 
 bool parse_directions_line(char *line, int line_number) {
+    char *token;
+    char **existing;
+    int dir_cnt = 0;
+    int i;
 
     line = beginning_of_data(line);
+    existing = (char **)config.dir.used;
+
+    while(token = strtok(NULL, ", ")) {
+        if(config.dir.used == 32)                   // overflow
+            return false;
+        for(i = 0; i < config.dir.used; i++) {      // dup check
+            if(streq(token, existing[i]))
+                return false;
+        }
+        dynarray_push(config.dir, token);
+    };
 
     return true;
 }
