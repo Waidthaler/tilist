@@ -4,7 +4,7 @@
 
 @IMAGE: h, w, #bgcolor, bgimage
 @DIRECTIONS: N, E, S, W     // which translates to 1, 2, 3, 4 (zero is reserved)
-@TILE: name, s1;s2;...;sn, spritesheet_path;width;height,
+@TILE: name, s1;s2;...;sn, spritesheet_path;width;height, cx;cy
 @VERTEX: order, x, y, N:n1;E:n2;W:n3;S:n4, tiletype:orientation
 
 */
