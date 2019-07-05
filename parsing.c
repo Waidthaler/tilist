@@ -7,6 +7,8 @@
 @TILE: name, s1;s2;...;sn, spritesheet_path;width;height, cx;cy
 @VERTEX: order, x, y, N:n1;E:n2;W:n3;S:n4, tiletype:orientation
 
+https://github.com/DaveGamble/cJSON
+
 */
 
 //==============================================================================
