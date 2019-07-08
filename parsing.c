@@ -8,7 +8,7 @@
         height: 800,
         width:  600,
         bgcolor: "#FFFFFF",
-        image:   "/foo/bar/somefile.png"
+        image:   "/foo/bar/somefile.png"      // optional
     },
     directions: [ "N", "E", "S", "W" ],       // assumed to be clockwise
     tiles: {
@@ -67,7 +67,10 @@
 
 cJSON *parse_config(char *buf) {
     cJSON *json;
+    cJSON *cur;
+    cJSON *sub;
     const char *error_ptr;
+    int i;
 
     json = cJSON_parse(buf);
 
@@ -78,7 +81,104 @@ cJSON *parse_config(char *buf) {
         }
         return NULL;
     }
+    free(buf);
 
+    // Parse and validate background ===========================================
+
+    cur = cJSON_GetObjectItemCaseSensitive(json, "background");
+    if(cur == NULL) {
+        fprintf(stderr, "Missing background entry in config file.\n");
+        return NULL;
+    }
+
+    // background.width --------------------------------------------------------
+
+    sub = cJSON_GetObjectItemCaseSensitive(cur, "width");
+    if(sub == NULL) {
+        fprintf(stderr, "Missing background.width entry in config file.\n");
+        return NULL;
+    }
+    if(!cJSON_isNumber(sub) || sub.valueint < 1) {
+        fprintf(stderr, "Malformed background.width in config file, must be a positive integer.\n");
+        return NULL;
+    }
+
+    config.image_width = sub.valueint;
+
+    // background.height -------------------------------------------------------
+
+    sub = cJSON_GetObjectItemCaseSensitive(cur, "height");
+    if(sub == NULL) {
+        fprintf(stderr, "Missing background.height entry in config file.\n");
+        return NULL;
+    }
+    if(!cJSON_isNumber(sub) || sub.valueint < 1) {
+        fprintf(stderr, "Malformed background.height in config file, must be a positive integer.\n");
+        return NULL;
+    }
+
+    config.image_height = sub.valueint;
+
+    // background.bgcolor ------------------------------------------------------
+
+    sub = cJSON_GetObjectItemCaseSensitive(cur, "bgcolor");
+    if(sub == NULL) {
+        fprintf(stderr, "Missing background.bgcolor entry in config file.\n");
+        return NULL;
+    }
+    if(strlen(sub.valuestring) == 7 && sub.valuestring[0] == '#') {
+        for(i = 1; i < 8; i++) {
+            if(!isxdigit(sub.valuestring[i])) {
+                fprintf(stderr, "Malformed background.bgcolor entry, must be in the form '#xxxxxx', where 'x' represents a hexadecimal digit.\n");
+                return NULL;
+            }
+        }
+    } else {
+        fprintf(stderr, "Malformed background.bgcolor entry, must be in the form '#xxxxxx'.\n");
+        return NULL;
+    }
+
+    config.image.bgcolor.a = 0xFF;
+    parseHexTriplet(sub.valuestring);
+
+    // background.image --------------------------------------------------------
+
+    sub = cJSON_GetObjectItemCaseSensitive(cur, "image");
+    if(sub != NULL) {
+        config.image.bg_image_filename = malloc(strlen(sub.valuestring) + 1);
+        strcpy(config.image.bg_image_filename, sub.valuestring);
+    }
+
+    // Parse and validate directions -------------------------------------------
+
+    // Parse and validate tiles ------------------------------------------------
+
+    // Parse and validate vertices ---------------------------------------------
+
+}
+
+
+//==============================================================================
+// Given a string of the form "#xxxxxx", sets the corresponding RGB values in
+// the Pixel.
+//==============================================================================
+
+void parseHexTriplet(char *triplet, Pixel *p) {
+    char buf[3] = { ' ', ' ', '\0');
+
+    buf[0] = triplet[1];
+    buf[1] = triplet[2];
+    p->r = (uint8_t)strtol(buf, NULL, 16);
+
+    buf[0] = triplet[3];
+    buf[1] = triplet[4];
+    p->g = (uint8_t)strtol(buf, NULL, 16);
+
+    buf[0] = triplet[5];
+    buf[1] = triplet[6];
+    p->b = (uint8_t)strtol(buf, NULL, 16);
+
+    return;
 }
 
 

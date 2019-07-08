@@ -15,13 +15,14 @@ typedef struct {    // Generic RGBA pixel type
     uint8_t a;
 } Pixel;
 
-struct Config {           // global config structure
-    Dynarray  dir;          // direction array
-    Dynarray  vert;         // vertex array
-    Dynarray  tile;         // tile master array
+struct Config {                   // global config structure
+    Dynarray  dir;                  // direction array
+    Dynarray  vert;                 // vertex array
+    Dynarray  tile;                 // tile master array
     int       image_width;
     int       image_height;
     Pixel     bgcolor;
+    char     *bg_image_filename;
     char     *output_png_name;
 };
 
