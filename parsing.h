@@ -9,20 +9,15 @@
 #include <stdio.h>
 
 #include "tilist.h"
+#include "cJSON.h"
 
 extern struct Config config;
 
 // Prototypes ==================================================================
 
-char *beginning_of_data(char *line);
-void clean_line(char *line);
-bool parse_image_line(char *line, int line_number);
-bool parse_directions_line(char *line, int line_number);
-bool parse_rgb_hex(char *rgb, Pixel *pixel);
-bool parse_tile_line(char *line, int line_number);
-bool parse_vertex_line(char *line, int line_number);
-bool partial_line(char *line);
-bool streq(char *a, char *b);
-bool streqn(char *a, char *b, int n);
+char *load_file(char *fname)
+bool  partial_line(char *line);
+bool  streq(char *a, char *b);
+bool  streqn(char *a, char *b, int n);
 
 #endif // PARSING_H

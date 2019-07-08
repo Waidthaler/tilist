@@ -2,13 +2,6 @@
 
 /*
 
-@IMAGE: h, w, #bgcolor, bgimage
-@DIRECTIONS: N, E, S, W     // which translates to 1, 2, 3, 4 (zero is reserved)
-@TILE: name, s1;s2;...;sn, spritesheet_path;width;height, cx;cy
-@VERTEX: order, x, y, N:n1;E:n2;W:n3;S:n4, tiletype:orientation
-
-https://github.com/DaveGamble/cJSON
-
 
 {
     background: {
@@ -18,9 +11,8 @@ https://github.com/DaveGamble/cJSON
         image:   "/foo/bar/somefile.png"
     },
     directions: [ "N", "E", "S", "W" ],       // assumed to be clockwise
-    tiles: [
-        {
-            name: "blinky",
+    tiles: {
+        blinky: {
             sides: [
                 {
                     direction:   "N",
@@ -40,11 +32,13 @@ https://github.com/DaveGamble/cJSON
             centerX:    10,
             centerY:    10,
         },
+        pinky: { },
+        inky:  { },
+        clyde: { },
         ...
-    ],
-    vertices: [
-        {
-            name: "foo", // just used for neighbor references,
+    },
+    vertices: {
+        foo: {
             order: 1,
             eligibleTiles: [ "blinky", "pinky", "inky", "clyde" ],  // or null for all
             neighbors: {
@@ -57,7 +51,7 @@ https://github.com/DaveGamble/cJSON
             centerY: 227
         },
         ...
-    ],
+        },
 }
 
 
@@ -65,188 +59,58 @@ https://github.com/DaveGamble/cJSON
 */
 
 //==============================================================================
-// Attempts to parse the supplied image line, storing the results in the global
-// config object. Returns true on success, false on failure.
+// Given the contents of the config file returned by load_file, attempts to
+// parse the JSON contained therein. On success, returns a pointer to a cJSON
+// object; on error, returns NULL. Automatically deallocates the buffer returned
+// by load_file.
 //==============================================================================
 
-bool parse_image_line(char *line, int line_number) {
-    char *token;
-    bool bres;
+cJSON *parse_config(char *buf) {
+    cJSON *json;
+    const char *error_ptr;
 
-    line = beginning_of_data(line);
+    json = cJSON_parse(buf);
 
-    //--------------------------------------------------------------------------
-
-    token = strtok(line, ", ");
-    if(!token) {
-        printf("Invalid @IMAGE parameter on line %d.\n", line_number);
-        return false;
-    }
-    config.image_width = atoi(token);
-    if(config.image_width < 1) {
-        printf("Invalid @IMAGE width parameter on line %d.\n", line_number);
-        return false;
-    }
-
-    //--------------------------------------------------------------------------
-
-    token = strtok(NULL, ", ");
-    if(!token) {
-        printf("Missing or invalid @IMAGE height parameter on line %d.\n", line_number);
-        return false;
-    }
-    config.image_height = atoi(token);
-    if(config.image_height < 1) {
-        printf("Invalid @IMAGE height parameter on line %d.\n", line_number);
-        return false;
-    }
-
-    //--------------------------------------------------------------------------
-
-    token = strtok(NULL, ", ");
-    if(!token) {
-        printf("Missing or invalid @IMAGE background color parameter on line %d.\n", line_number);
-        return false;
-    }
-    bres = parse_rgb_hex(token, &(config.bgcolor));
-    if(!bres) {
-        printf("Invalid @IMAGE background color parameter on line %d.\n", line_number);
-        return false;
-    }
-
-    //--------------------------------------------------------------------------
-
-    // TODO: If present, load background image
-
-    return true;
-}
-
-
-//==============================================================================
-// Attempts to parse a directions line. Returns true on success, false on
-// failure. Will fail if duplicate directions are supplied or the number of
-// directions exceeds 32.
-//==============================================================================
-
-bool parse_directions_line(char *line, int line_number) {
-    char *token;
-    char **existing;
-    int dir_cnt = 0;
-    int i;
-
-    line = beginning_of_data(line);
-    existing = (char **)config.dir.used;
-
-    while(token = strtok(NULL, ", ")) {
-        if(config.dir.used == 32)                   // overflow
-            return false;
-        for(i = 0; i < config.dir.used; i++) {      // dup check
-            if(streq(token, existing[i]))
-                return false;
+    if(json == NULL) {
+        error_ptr = cJSON_GetErrorPtr();
+        if(error_ptr != NULL) {
+            fprintf(stderr, "Error in config file before: %s\n", error_ptr);
         }
-        dynarray_push(config.dir, token);
-    };
-
-    return true;
-}
-
-
-//==============================================================================
-//==============================================================================
-
-bool parse_tile_line(char *line, int line_number) {
-
-    line = beginning_of_data(line);
-
-    return true;
-}
-
-
-//==============================================================================
-//==============================================================================
-
-bool parse_vertex_line(char *line, int line_number) {
-
-    line = beginning_of_data(line);
-
-    return true;
-}
-
-
-
-//==============================================================================
-// Given an RGB string in the form "#xxxxxx" and a pointer to a Pixel struct,
-// convert the former to the latter. Returns true on success and false
-// on failure.
-//==============================================================================
-
-bool parse_rgb_hex(char *rgb, Pixel *pixel) {
-    char *p;
-    char octet[3] = "\0\0\0";
-
-    if(*rgb != '#' || (strlen(rgb) != 4 && strlen(rgb) != 7))
-        return false;
-
-    for(p = rgb + 1; *p; p++) {
-        if(*p > 96 && *p < 103)
-            *p = *p - 32;
-        if(!isxdigit(*p))
-            return false;
+        return NULL;
     }
 
-    p = rgb + 1; octet[0] = *p; octet[1] = *(p + 1); pixel->r = (uint8_t)strtol(octet, NULL, 16);
-    p += 2;      octet[0] = *p; octet[1] = *(p + 1); pixel->g = (uint8_t)strtol(octet, NULL, 16);
-    p += 2;      octet[0] = *p; octet[1] = *(p + 1); pixel->b = (uint8_t)strtol(octet, NULL, 16);
-    pixel->a = 0;
-
-    return true;
 }
 
 
 //==============================================================================
-// Given a line beginning with a prefix ending in ':', return a pointer to the
-// first non-whitespace character.
+// Attempts to open the supplied filename and read its contents into a buffer.
+// Returns NULL on error. On success, returns a pointer to the buffer, which is
+// dynamically allocated and must be freed.
 //==============================================================================
 
-char *beginning_of_data(char *line) {
-    char *p;
+char *load_file(char *fname) {
+    char  *buf;
+    FILE  *fp;
+    size_t bytes_read;
+    size_t bufsize = 0xFFFF;
 
-    for(p = line; *p != ':'; p++);
-    p++;
-    while(isspace(*p))
-        p++;
+    buf = malloc(bufsize)
+    if(!buf)
+        return NULL;
 
-    return p;
-}
+    fp = fopen(fname, "r");
+    if(!fp)
+        return NULL;
 
-
-//==============================================================================
-// Takes an input line and removes any comments, then trims trailing whitespace.
-//==============================================================================
-
-void clean_line(char *line) {
-    char *p;
-
-    // Remove comments ---------------------------------------------------------
-
-    p = line;
-    while(*p) {
-        if(*p == '#') {
-            *p = '\0';
-            break;
-        }
-        p++;
+    bytes_read = fread(buf, sizeof(char), bufsize, fp);
+    while(feof(fp)) {
+        bufsize *= 2;
+        buf = realloc(buf, bufsize);
+        bytes_read += fread(buf + bytes_read, sizeof(char), bufsize / 2, fp);
     }
+    fclose(fp);
 
-    // Trim trailing whitespace ------------------------------------------------
-
-    for(--p; p >= line && isspace(*p); p--);
-    if(isspace(*p))
-        *p = '\0';
-    else
-        *(p+1) = '\0';
-
-    return;
+    return buf;
 }
 
 
