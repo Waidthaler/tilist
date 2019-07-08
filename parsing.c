@@ -9,6 +9,59 @@
 
 https://github.com/DaveGamble/cJSON
 
+
+{
+    background: {
+        height: 800,
+        width:  600,
+        bgcolor: "#FFFFFF",
+        image:   "/foo/bar/somefile.png"
+    },
+    directions: [ "N", "E", "S", "W" ],       // assumed to be clockwise
+    tiles: [
+        {
+            name: "blinky",
+            sides: [
+                {
+                    direction:   "N",
+                    label:       1231,
+                    matchAny:    false,  // false is the default for all of these; can be omitted
+                    endcap:      false,
+                    matchLabels: [ 2131, 13221, 12 ],
+                    matchAnyOf:  981269,
+                    matchAllOf:  false,
+                    matchNoneOf: false,
+                },
+                ...
+            ],
+            spritesheet: "/foo/bar/sprites1.png",
+            tileHeight: 20,
+            tileWidth:  20,
+            centerX:    10,
+            centerY:    10,
+        },
+        ...
+    ],
+    vertices: [
+        {
+            name: "foo", // just used for neighbor references,
+            order: 1,
+            eligibleTiles: [ "blinky", "pinky", "inky", "clyde" ],  // or null for all
+            neighbors: {
+                N: "bar",
+                E: "baz",
+                S: "quux",
+                W: "murgatroyd"
+            },
+            centerX: 100,
+            centerY: 227
+        },
+        ...
+    ],
+}
+
+
+
 */
 
 //==============================================================================

@@ -39,12 +39,8 @@ typedef struct {             // Definition of mating surface/side
     bool      direction;         // offset into config.dir.ary
     bool      match_any;         // if true, matches any tile
     bool      endcap;            // if true, can match no tile
-    bool      match_label;       // if true, matches only label
     bool      match_labels;      // if true, matches any label in labels
-    bool      match_any_of;      // if true, matches any bit in any_of
-    bool      match_all_of;      // if true, matches all bits in all_of
-    bool      match_none_of;     // if true, cannot match any bit in none_of
-    uint32_t  label;             // if non-zero, matches this label integer
+    uint32_t  label;             // label for this surface
     uint32_t *labels;            // if not NULL, a null-terminated array of matching labels
     uint32_t  any_of;            // if match_any_of is true, will match any 1 bit in this bitmask
     uint32_t  all_of;            // if match_all_of is true, must match all 1 bits in this bitmask
