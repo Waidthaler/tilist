@@ -1,12 +1,17 @@
 #ifndef TILIST_H
 #define TILIST_H
 
+#include <ctype.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <inttypes.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "dynarray.h"
 #include "lodepng/lodepng.h"
+#include "cJSON.h"
+
 
 typedef struct {    // Generic RGBA pixel type
     uint8_t r;
@@ -62,7 +67,10 @@ typedef struct {         // Definition of tile masters
 
 // Prototypes ==================================================================
 
-bool load_definitions(char *filename);
-int  pre_init();
+bool  init(char *fname);
+char *load_file(char *fname)
+bool  partial_line(char *line);
+bool  streq(char *a, char *b);
+bool  streqn(char *a, char *b, int n);
 
 #endif // TILIST_H
