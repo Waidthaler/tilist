@@ -67,8 +67,11 @@ typedef struct {         // Definition of tile masters
 
 // Prototypes ==================================================================
 
+int   get_dir_offset(char *name);
 bool  init(char *fname);
 char *load_file(char *fname)
+bool  parse_config(char *fname);
+void  parse_hex_triplet(char *triplet, Pixel *p);
 bool  partial_line(char *line);
 bool  streq(char *a, char *b);
 bool  streqn(char *a, char *b, int n);

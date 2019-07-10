@@ -205,7 +205,7 @@ bool parse_config(char *fname) {
     }
 
     config.image.bgcolor.a = 0xFF;
-    parseHexTriplet(sub.valuestring);
+    parse_hex_triplet(sub.valuestring);
 
     // background.image --------------------------------------------------------
 
@@ -264,11 +264,26 @@ bool parse_config(char *fname) {
 
 
 //==============================================================================
+// Given a direction name string, returns its offset or 0 if not found.
+//==============================================================================
+
+int get_dir_offset(char *name) {
+    int i;
+
+    for(i = 1; i <= Config.dir.used; i++) {
+        if(streqn(config.dir.ary[i], name))
+            return i;
+    }
+    return 0;
+}
+
+
+//==============================================================================
 // Given a string of the form "#xxxxxx", sets the corresponding RGB values in
 // the Pixel.
 //==============================================================================
 
-void parseHexTriplet(char *triplet, Pixel *p) {
+void parse_hex_triplet(char *triplet, Pixel *p) {
     char buf[3] = { ' ', ' ', '\0');
 
     buf[0] = triplet[1];
